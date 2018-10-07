@@ -1,0 +1,5 @@
+{
+  "portNumber" : ":9999",
+  "dbConnection" : "rootUser:skeeter@cluster0-shard-00-00-ahzfe.mongodb.net:27017,cluster0-shard-00-01-ahzfe.mongodb.net:27017,cluster0-shard-00-02-ahzfe.mongodb.net:27017/admin?replicaSet=Cluster0-shard-0",
+  "dbName" : "DACS_BL"
+}
