@@ -6,14 +6,29 @@ import (
 	"net/http"
 	"encoding/base64"
 
+	"encoding/json"
 )
 
 func testCreateSignedMessage(w http.ResponseWriter, r *http.Request){
 
-	skey, err1 := base64.StdEncoding.DecodeString("PaJFkd/75KbKN29/R1aHUUIurZdFKco65ewra8wjRJMlkLXXnlMTPKQBwx6KSi+GnWB/T0Iqisor6ByqaJkcHA==")
+
+	structCreateSignedTransaction := StructCreateSignedTransaction{}
+
+	err := json.NewDecoder(r.Body).Decode(&structCreateSignedTransaction)
+
+	if (err != nil) {
+		b := []byte(`{"Status" : "FAILURE", "message" : "failed to parse json"}`)
+		w.Write(b)
+	}
 
 
-	message := []byte(`{"orgId":"shuttle_fund", "userId" : "yada", "code" : "123456789"}`)
+
+	//skey, err1 := base64.StdEncoding.DecodeString("F1jd4BQz7T1ul/GAXHDnr7m/LJp0G6ZcVgJHfFq3LpfoAX5dgrR5Fct2QrJGHH2y5WELFc904KEr8h8Gk2PI7w==")
+	skey, err1 := base64.StdEncoding.DecodeString(structCreateSignedTransaction.PrivateKey)
+
+
+	message, err1  := base64.StdEncoding.DecodeString(structCreateSignedTransaction.Message)
+	//message := []byte(structCreateSignedTransaction.Message)
 
 	if(err1 != nil){
 

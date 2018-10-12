@@ -168,7 +168,7 @@ func writeToIdentityAttrbutesCollection(identityAttribute StructIdentityAttribut
 
 }
 
-func updateRegisterUser(registerUser RegisterUser, session mgo.Session) error {
+func updateRegisterUser(registerUser StructRegisterUser, session mgo.Session) error {
 
 	s := session.Clone()
 	c := s.DB(AppConfig.DbName).C("users")
@@ -184,10 +184,147 @@ func updateRegisterUser(registerUser RegisterUser, session mgo.Session) error {
 	}else{
 		return nil
 	}
+}
+
+func getTransaction(organization_id string, session mgo.Session) (StructTransaction, error) {
+
+	s := session.Clone()
+	defer s.Close()
+
+	//error check on every access
+	s.SetSafe(&mgo.Safe{})
+
+	c := s.DB(AppConfig.DbName).C("transactions")
 
 
+	var transaction StructTransaction
+	err := c.Find(bson.M{"organization_id":organization_id}).One(&transaction)
+	if err != nil {
+		return transaction, err
+	}else
+	{
+		return transaction, nil
+	}
+
+}
+func resetTransaction(transaction StructTransaction, session mgo.Session) error {
+
+	s := session.Clone()
+	c := s.DB(AppConfig.DbName).C("transactions")
 
 
+	fmt.Printf("transaction = %v\n", transaction)
+	// Update
+	organization_id := transaction.Organization_id
+	selector := bson.M{"organization_id": organization_id}
+
+	updator := bson.M{"$set": bson.M{"transaction": transaction.Transaction, "signers" :[]string{transaction.PublicKey}, "status" : "QUEUED"}}
+
+	err := c.Update(selector, updator)
+	if(err != nil) {
+		return err
+	} else{
+		return nil
+	}
 
 
+}
+
+func updateTransactionSigners(organization_id string, signers []string,  session mgo.Session) error {
+
+	s := session.Clone()
+	c := s.DB(AppConfig.DbName).C("transactions")
+
+
+	//fmt.Printf("transaction = %v\n", transaction)
+	// Update
+	//organization_id := transaction.Organization_id
+	selector := bson.M{"organization_id": organization_id}
+
+	updator := bson.M{"$set": bson.M{ "signers" : signers, "status" : "QUEUED"}}
+
+	err := c.Update(selector, updator)
+	if(err != nil) {
+		return err
+	} else{
+		return nil
+	}
+
+
+}
+func getRequiredSignatures(organization_id string, session mgo.Session) ([]string, error){
+
+	s := session.Clone()
+	c := s.DB(AppConfig.DbName).C("signers")
+
+
+	var signers StructSigners
+	err := c.Find(bson.M{"organization_id":organization_id}).One(&signers)
+	if err != nil {
+		return signers.Signers, err
+	}else
+	{
+		return signers.Signers, nil
+	}
+}
+
+func updateTransactionSignatures(organization_id string, required_signatures [] string, signature string, session mgo.Session)(string, error){
+
+	s := session.Clone()
+	c := s.DB(AppConfig.DbName).C("transactions")
+
+
+	var transaction StructTransaction
+	err := c.Find(bson.M{"organization_id":organization_id}).One(&transaction)
+	if err != nil {
+		return "", err
+	}else
+	{
+
+		var found bool = false;
+		for index, element := range transaction.Signers{
+
+			fmt.Println("index  %d", index)
+			fmt.Println("signature %s", element)
+
+			if(element == signature){
+				found = true
+				break;
+			}
+
+		}
+
+		if(found != true){
+
+			selector := bson.M{"organization_id": organization_id}
+
+
+			transaction.Signers = append(transaction.Signers, signature)
+			updator := bson.M{"$set": bson.M{ "signers" : transaction.Signers, "status" : "QUEUED"}}
+
+			err := c.Update(selector, updator)
+			if(err != nil) {
+				return "", err
+			}
+
+			var status string;
+			if(len(required_signatures) == len(transaction.Signers)) {
+				status = "PROCESS"
+			}else{
+				status = "QUEUED"
+			}
+
+
+			updator = bson.M{"$set": bson.M{ "status" : status}}
+
+			err = c.Update(selector, updator)
+			if(err != nil) {
+				return "", err
+			} else{
+				return status, nil
+			}
+
+		}
+		return "", nil
+	}
 }

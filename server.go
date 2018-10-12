@@ -16,6 +16,7 @@ import (
     //"strconv"
     "encoding/base64"
     //"encoding/hex"
+    //"debug/elf"
 )
 
 
@@ -83,7 +84,7 @@ func generateSigningKeys(w http.ResponseWriter, r *http.Request) {
 
 func register(w http.ResponseWriter, r *http.Request){
 
-    registerUser := RegisterUser{}
+    registerUser := StructRegisterUser{}
 
     err := json.NewDecoder(r.Body).Decode(&registerUser)
 
@@ -115,7 +116,7 @@ func register(w http.ResponseWriter, r *http.Request){
 
         }else{
 
-            var registerUser1 RegisterUser
+            var registerUser1 StructRegisterUser
 
             fmt.Printf("json string = %s", string(str[:]))
             json.Unmarshal(str[:], &registerUser1)
@@ -136,14 +137,163 @@ func register(w http.ResponseWriter, r *http.Request){
 
         }
 
+    }
+}
+
+
+func sendTransaction(w http.ResponseWriter, r *http.Request){
+
+    sendTransaction := StructSendTransaction{}
+
+    err := json.NewDecoder(r.Body).Decode(&sendTransaction)
+
+    if (err != nil) {
+        b := []byte(`{"Status" : "FAILURE", "message" : "failed to parse json"}`)
+        w.Write(b)
+    } else
+    {
+
+
+        fmt.Println("input=%v", sendTransaction)
+        pkey, err := base64.StdEncoding.DecodeString(sendTransaction.PublicKey)
+        if(err != nil){
+
+        }
+
+
+        /**
+        verify the signature of the message
+         */
+        encStr, err := base64.StdEncoding.DecodeString(sendTransaction.Message)
+        str, res := cryptosign.CryptoSignOpen(encStr, pkey)
+
+
+        var tx StructTransaction1
+        json.Unmarshal([]byte(str), &tx)
+
+        fmt.Println("tx1=%v", tx)
+        /**
+        signature failure
+         */
+        if(res != 0){
+            b := []byte(`{"Status" : "Failure", "message" : "signature failure"}`)
+            w.Write(b)
+
+        }else{
 
 
 
+            tx2, err := getTransaction(tx.Organization_id, *mgoSession)
+            if(err != nil) {
+                b := []byte(`{"Status" : "FAILURE", "message": "organization not found"}`)
+                w.Write(b)
+
+            }else{
+
+                fmt.Println("tx2=%v", tx2)
+
+
+                /**
+                if the transaction is not equal to the incoming transaction, overwrite and add pubkey to signatures
+                 */
+
+                 if(tx2.Transaction != tx.SendTransaction){
+                     // update the transacton and clear all pubkeys and add this one
+
+                     tx2.PublicKey = sendTransaction.PublicKey
+                     tx2.Transaction = tx.SendTransaction
+                     err := resetTransaction(tx2, *mgoSession)
+                     if(err != nil){
+                         b := []byte(`{"Status" : "ERROR", "message": "update failed"}`)
+                         w.Write(b)
+                     }
+                 }else{
+                     /**
+				  if the transaction is the current transaction then verify all required signatures are present
+				  if not just add this transaction
+				   */
+
+
+				   fmt.Println("Updating existing transaction")
+				   // get the required signatures
+				   signers, err := getRequiredSignatures(tx.Organization_id, *mgoSession)
+				   if(err != nil){
+				       log.Fatal(err)
+                       b := []byte(`{"Status" : "ERROR", "message": "failed to get signers"}`)
+                       w.Write(b)
+                   }else{
+
+                       // check to see
+
+
+                       var required  bool
+                       required = false
+                       for index, element := range signers{
+
+                           fmt.Println("index  %d", index)
+                           fmt.Println("signature %s", element)
+
+                           if(element == sendTransaction.PublicKey){
+                               fmt.Println("this signature is required")
+                               required = true
+                               break;
+                           }
+
+                       }
+
+                       // get the signatures on the
+
+                       if(required){
+                           // determine if this signature has been provided
+                           status, err1 := updateTransactionSignatures(tx.Organization_id, signers, sendTransaction.PublicKey, *mgoSession)
+                           if(err1 != nil){
+
+                           } else{
+                               b := []byte(`{"Status" : "SUCCESS", "message": "transaction updated to ` + status + `"}`)
+                               w.Write(b)
+                           }
+
+                       }else{
+
+                           b := []byte(`{"Status" : "FAILURE", "message": "invalid public key"}`)
+                           w.Write(b)
+                       }
+
+
+                   }
+
+
+                 }
 
 
 
+                b := []byte(`{"Status" : "SUCCESS", "message": "` + tx2.Transaction + `"}`)
+                w.Write(b)
+            }
 
 
+            /*
+            var registerUser1 StructRegisterUser
+
+            fmt.Printf("json string = %s", string(str[:]))
+            json.Unmarshal(str[:], &registerUser1)
+            registerUser1.PublicKey = registerUser.PublicKey
+
+            fmt.Printf("json object = %v", registerUser1)
+            fmt.Printf("orgid=%s userid=%s code=%s", registerUser1.OrgId, registerUser1.UserId, registerUser1.Code)
+
+            err = updateRegisterUser(registerUser1, *mgoSession)
+            if(err != nil){
+                b := []byte(`{"Status" : "Failure", "message": "failed to update usersa"}`)
+                w.Write(b)
+            }else{
+                b := []byte(`{"Status" : "SUCCESS", "message": "` + string(str[:])    + `"}`)
+                w.Write(b)
+            }
+            */
+
+
+        }
 
     }
 }
@@ -414,7 +564,7 @@ func main() {
     router.HandleFunc("/", getReq).Methods("GET")
     router.HandleFunc("/generateSigningKeys", generateSigningKeys).Methods("GET")
     router.HandleFunc("/register", register).Methods("POST");
-
+    router.HandleFunc("/sendTransaction", sendTransaction).Methods("POST")
 
 
     // test apis

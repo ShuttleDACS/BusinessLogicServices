@@ -115,12 +115,42 @@ type IdentityAttributesResponse struct{
 }
 
 
-type RegisterUser struct{
+type StructRegisterUser struct{
 
 	PublicKey 	string `json:"publicKey"`
 	Message  	string `json:"message"`
 	OrgId  		string `json:"orgId"`
 	UserId  	string `json:"userId"`
 	Code 		string `json:"code"`
+}
+type StructSendTransaction struct{
+
+	PublicKey 	string `json:"publicKey"`
+	Message  	string `json:"message"`
+}
+
+type StructCreateSignedTransaction struct{
+	PrivateKey 	string `json:"privateKey"`
+	Message  	string `json:"message"`
+}
+
+type StructTransaction struct{
+
+	PublicKey 			string `json:"publicKey"`
+	Organization_id  	string `json:"organization_id"`
+	Transaction 		string `json:"transaction"`
+	Signers				[]string `json:"signers"`
+	Status				string `json:"status"`
+}
+
+type StructTransaction1 struct{
+
+	Organization_id 	string `json:"organization_id"`
+	SendTransaction  	string `json:"sendTransaction"`
+}
+type StructSigners struct{
+
+	Organization_id 	string 		`json:"organization_id"`
+	Signers  			[]string 	`json:"signers"`
 }
 
