@@ -9,14 +9,15 @@ import (
     "gopkg.in/mgo.v2/bson"
     "io/ioutil"
     "fmt"
-    "crypto/tls"
-    "net"
+    //"crypto/tls"
+    //"net"
     //"crypto"
     "github.com/GoKillers/libsodium-go/cryptosign"
     //"strconv"
     "encoding/base64"
     //"encoding/hex"
     //"debug/elf"
+
 )
 
 
@@ -505,6 +506,8 @@ func login(w http.ResponseWriter, r *http.Request) {
 func main() {
     fmt.Println("App starting")
 
+
+
     fmt.Println("Reading config file")
 
     raw, err := ioutil.ReadFile("config.json")
@@ -519,17 +522,18 @@ func main() {
 
 
     // connect to the database
-    dialInfo, err := mgo.ParseURL(AppConfig.DbConnection)
+    //dialInfo, err := mgo.ParseURL(AppConfig.DbConnection)
     //fmt.Printf("%+v\n", dialInfo)
 
-    if err != nil{
+    //if err != nil{
 
-        panic(err)
-    }
+    //    panic(err)
+    //}
 
 
     fmt.Println("Trying to open DB")
 
+    /*
     //Below part is similar to above.
     tlsConfig := &tls.Config{}
     dialInfo.DialServer = func(addr *mgo.ServerAddr) (net.Conn, error) {
@@ -543,7 +547,9 @@ func main() {
         panic(err)
     }
 
-    session, err1 := mgo.DialWithInfo(dialInfo)
+    */
+    //session, err1 := mgo.DialWithInfo(dialInfo)
+    session, err1 := mgo.Dial(AppConfig.DbConnection)
     defer session.Close()
 
 
