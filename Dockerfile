@@ -1,4 +1,4 @@
-FROM s390x/golang:1.10.3
+FROM golang:latest
 WORKDIR /go/src/app
 ADD BusinessLogicServices .
 ADD BusinessLogicServices/libsodium.so.23 .
