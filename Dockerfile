@@ -1,4 +1,5 @@
 FROM golang:latest
+
 WORKDIR /go/src/app
 ADD BusinessLogicServices .
 ADD BusinessLogicServices/libsodium.so.23 .
