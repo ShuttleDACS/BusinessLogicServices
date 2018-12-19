@@ -1,8 +1,8 @@
 FROM golang:latest
 
 WORKDIR /go/src/app
-ADD BusinessLogicServices .
-ADD BusinessLogicServices/libsodium.so.23 .
+#ADD BusinessLogicServices .
+#ADD BusinessLogicServices/libsodium.so.23 .
 RUN \
     mkdir -p /tmpbuild/libsodium && \
     cd /tmpbuild/libsodium && \
