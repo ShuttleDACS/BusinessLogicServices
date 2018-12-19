@@ -73,11 +73,13 @@ func getReq(w http.ResponseWriter, r *http.Request) {
 
 func generateSigningKeys(w http.ResponseWriter, r *http.Request) {
 
+
     signingKeys := _generateSigningKeys()
 
 
     b := []byte(`{"Status" : "SUCCESS", "secretKey": "` + signingKeys.PrivateKey + `", "publicKey" : ` + signingKeys.PublicKey + `"}`)
     w.Write(b)
+
 }
 
 
@@ -549,6 +551,8 @@ func main() {
 
     */
     //session, err1 := mgo.DialWithInfo(dialInfo)
+
+
     session, err1 := mgo.Dial(AppConfig.DbConnection)
     defer session.Close()
 
@@ -562,6 +566,7 @@ func main() {
 
     // set the global
     mgoSession = session
+
 
 
 
