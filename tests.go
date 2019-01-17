@@ -22,13 +22,10 @@ func testCreateSignedMessage(w http.ResponseWriter, r *http.Request){
 	}
 
 
+	fmt.Println("%v", structCreateSignedTransaction)
 
 	//skey, err1 := base64.StdEncoding.DecodeString("F1jd4BQz7T1ul/GAXHDnr7m/LJp0G6ZcVgJHfFq3LpfoAX5dgrR5Fct2QrJGHH2y5WELFc904KEr8h8Gk2PI7w==")
 	skey, err1 := base64.StdEncoding.DecodeString(structCreateSignedTransaction.PrivateKey)
-
-
-	message, err1  := base64.StdEncoding.DecodeString(structCreateSignedTransaction.Message)
-	//message := []byte(structCreateSignedTransaction.Message)
 
 	if(err1 != nil){
 
@@ -38,6 +35,19 @@ func testCreateSignedMessage(w http.ResponseWriter, r *http.Request){
 		return;
 	}
 
+
+	message, err1  := base64.StdEncoding.DecodeString(structCreateSignedTransaction.Message)
+	//message := []byte(structCreateSignedTransaction.Message)
+
+	if(err1 != nil){
+
+		b := []byte(`{"Status" : "FAILURE", "message: "failure to decode message}`)
+		w.Write(b)
+
+		return;
+	}
+
+	fmt.Println("skey", skey)
 	signedStr, res := cryptosign.CryptoSign(message, skey)
 
 	encStr := base64.StdEncoding.EncodeToString([]byte(signedStr))

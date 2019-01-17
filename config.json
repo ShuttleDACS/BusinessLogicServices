@@ -1,6 +1,3 @@
 {
-  "portNumber" : ":4000",
-  "dbConnection_cloud" : "rootUser:skeeter@cluster0-shard-00-00-ahzfe.mongodb.net:27017,cluster0-shard-00-01-ahzfe.mongodb.net:27017,cluster0-shard-00-02-ahzfe.mongodb.net:27017/admin?replicaSet=Cluster0-shard-0",
-  "dbConnection" : "mongodb://148.100.92.209:27017",
-  "dbName" : "DACS_BL"
+  "portNumber" : ":4000"
 }
