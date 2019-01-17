@@ -2,7 +2,7 @@ FROM golang:latest
 
 WORKDIR /go/src/app
 ADD DacsSecurityPolicy .
-ADD BusinessLogicServices/libsodium.so.23 .
+ADD DacsSecurityPolicy/libsodium.so.23 .
 RUN \
     mkdir -p /tmpbuild/libsodium && \
     cd /tmpbuild/libsodium && \
