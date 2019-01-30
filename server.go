@@ -19,7 +19,7 @@ var AppConfig Configuration
 /**
 These are the flags that are set corresponding to a signature for the transaction
 */
-var signatures = [3]bool{false, false, false}
+var signatures = []bool{}
 
 /**
 These are the keys that are required for signing a transaction
@@ -35,7 +35,6 @@ var currentTransaction string = ""
 /*--------------APIs-------------*/
 
 func getReq(w http.ResponseWriter, r *http.Request) {
-
 	/*
 	   error := test(*mgoSession)
 
@@ -62,7 +61,7 @@ func getReq(w http.ResponseWriter, r *http.Request) {
 
 	*/
 
-	b := []byte(`{"Status" : "SUCCESS", "signingKeys": "` + signingKeys[0] + "---" + signingKeys[1] + "---" + signingKeys[2] + `"}`)
+	b := []byte(`{"Status" : "SUCCESS", "signingKeys" : "Nothing yet"}`)
 	w.Write(b)
 
 	/*
@@ -101,11 +100,22 @@ func setValues(w http.ResponseWriter, r *http.Request) {
 	} else {
 		s := strings.Split(vals.ID, ",")
 		signingKeys = s
+		arrSize := len(signingKeys)
+		for i := 0; i < arrSize; i++ {
+			signatures = append(signatures, false)
+		}
 		fmt.Println("keys recieved")
 		b := []byte(`{"Status" : "Success", "message" : "keys successully stored "}`)
 		w.Write(b)
 		return
 	}
+}
+
+func setDumyKeys() {
+	signingKeys = append(signingKeys, "4PihPxjwR0PB+slfEDUf89mGZOOTWOJ+38yLLQKPj1Q=")
+	signingKeys = append(signingKeys, "dh7l37XepbjMKA48gogP1eE/gNMmvQ/VknqTjd2NiAc=")
+	signatures = append(signatures, false)
+	signatures = append(signatures, false)
 }
 
 func sendTransaction(w http.ResponseWriter, r *http.Request) {
@@ -137,6 +147,7 @@ func sendTransaction(w http.ResponseWriter, r *http.Request) {
 			if key == sendTransaction.PublicKey {
 				bValidKey = true
 				keyIndex = x
+				fmt.Println(key)
 			}
 
 		}
@@ -282,6 +293,8 @@ func main() {
 	router.HandleFunc("/", getReq).Methods("GET")
 	router.HandleFunc("/sendTransaction", sendTransaction).Methods("POST")
 
+	//test
+	//setDumyKeys()
 	// test apis
 	router.HandleFunc("/testSigning", testSigning).Methods("POST")
 	router.HandleFunc("/testCreateSignedMessage", testCreateSignedMessage).Methods("POST")
