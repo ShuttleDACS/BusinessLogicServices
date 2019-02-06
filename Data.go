@@ -1,8 +1,12 @@
 package main
 
+
+
 // the configuration object
 type Configuration struct {
-	PortNumber string
+	PortNumber 		string
+	WebServer 		string
+	WalletServer	string
 }
 
 type StructKeys struct {
@@ -22,4 +26,9 @@ type StructCreateSignedTransaction struct {
 
 type StructSetVal struct {
 	ID string `json:"id"`
+}
+
+type StuctWalletTransaction struct {
+	Action string	 	`json:"action"`
+	Params []string 	`json:"params"`
 }
