@@ -1,5 +1,5 @@
 {
   "portNumber" : ":3000",
-  "walletServer" : "127.0.0.1:4000",
-  "webserver" : "127.0.0.1:2000"
+  "walletServer" : "34.227.46.94:4000",
+  "webserver" : "34.227.46.94:2000"
 }
