@@ -1,23 +1,35 @@
 
 yada
-{"Status" : "SUCCESS", "secretKey": "PaJFkd/75KbKN29/R1aHUUIurZdFKco65ewra8wjRJMlkLXXnlMTPKQBwx6KSi+GnWB/T0Iqisor6ByqaJkcHA==",
+{"secretKey": "PaJFkd/75KbKN29/R1aHUUIurZdFKco65ewra8wjRJMlkLXXnlMTPKQBwx6KSi+GnWB/T0Iqisor6ByqaJkcHA==",
 "publicKey" : JZC1155TEzykAcMeikovhp1gf09CKorKK+gcqmiZHBw="}
 
-ztQnCk18p27yRztzy5u9DNmy7qIbD8waMXSKbRDvuWJn8L0GsV9+vtPvhcif61dX1BIYNjfDAnJYf/F7/0C+D3Rlc3QgbWVzc2FnZSBmb3IgREFDUw==
+
 
 brad
-"secretKey": "F1jd4BQz7T1ul/GAXHDnr7m/LJp0G6ZcVgJHfFq3LpfoAX5dgrR5Fct2QrJGHH2y5WELFc904KEr8h8Gk2PI7w==",
+{"secretKey": "F1jd4BQz7T1ul/GAXHDnr7m/LJp0G6ZcVgJHfFq3LpfoAX5dgrR5Fct2QrJGHH2y5WELFc904KEr8h8Gk2PI7w==",
 "publicKey" : 6AF+XYK0eRXLdkKyRhx9suVhCxXPdOChK/IfBpNjyO8="}
 
-iTGdCCIgn54elc5dAcVo11/zGIsf+VP0xKnOWUoGaUz+d4M6I+Q6g+4yLM9//81xzZ4SeAIdPjVIsgXLe2cdBHRlc3QgbWVzc2FnZSBmb3IgREFDUw==
 
 
 
 
-sendTransaction
-{
-"organization_id" : "shuttle_fund",
-"sendTransaction" : "base64encodedTransaction"
-}
 
-ewoib3JnYW5pemF0aW9uX2lkIiA6ICJzaHV0dGxlX2Z1bmQiLAoic2VuZFRyYW5zYWN0aW9uIiA6ICJiYXNlNjRlbmNvZGVkVHJhbnNhY3Rpb24iCn0="
+/sendTransaction testdata
+
+{"action" : "createWallet", : "params" : ["dacs01"]}
+base64 version
+eyJhY3Rpb24iIDogImNyZWF0ZVdhbGxldCIsIDogInBhcmFtcyIgOiBbImRhY3MwMSJdfQ==
+
+yada
+
+signed message = +LlkiXR1kuvk15F1jprknQOQDY4oltKMkGzQm9SjPVdbLuvE0qTl0QBngrF5VS8KemwuSIKFCAzEwNoKGCXsiYWN0aW9uIiA6ICJjcmVhdGVXYWxsZXQiLCAgInBhcmFtcyIgOiBbImRhY3MwMSJdfQ==
+
+new wallet
+5ahi4fE5ROFzGUo6v/0KVioqqmUxFxHl/QCVXceAwnIsndIgafAsS1B8HprQPWFFoREusmahxsv3PCEbeq+3CXsiYWN0aW9uIiA6ICJnZXROZXdBZGRyZXNzIiwgICJwYXJhbXMiIDogWyJkYWNzMDEiXX0=
+
+brad
+
+signed message = pTABh1NJZJYUVQXEb5zO3uTw+CI8nK/MyITA6LJ4a37f2O0mhB15y8vpcI65j5OVrU617ze5+FrGm8IkNlavAXsiYWN0aW9uIiA6ICJjcmVhdGVXYWxsZXQiLCAgInBhcmFtcyIgOiBbImRhY3MwMSJdfQ==
+
+new wallet
+SkwV4uk6GwYYTv+OzxDusFC1H+TNY2ctkAnC1PvLPveiZUaa+ZERx2H7YAoLG28uji6RNygjU22u5Udwb3PcBHsiYWN0aW9uIiA6ICJnZXROZXdBZGRyZXNzIiwgICJwYXJhbXMiIDogWyJkYWNzMDEiXX0=
