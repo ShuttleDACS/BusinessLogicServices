@@ -12,6 +12,7 @@ import (
 
 	"github.com/GoKillers/libsodium-go/cryptosign"
 	"github.com/gorilla/mux"
+	"github.com/jamesruan/sodium"
 )
 
 // Globals
@@ -300,7 +301,196 @@ func sendTransaction(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func sendTransactionTest(w http.ResponseWriter, r *http.Request) {
+// func sendTransactionTest(w http.ResponseWriter, r *http.Request) {
+
+// 	defer func() {
+// 		if err := recover(); err != nil {
+// 			fmt.Println(err)
+// 			b := []byte(`{"Status" : "FAILURE", "message" : "panic error event "}`)
+// 			w.Write(b)
+// 			return
+// 		}
+// 	}()
+// 	sendTransaction := StructSendTransaction{}
+
+// 	err := json.NewDecoder(r.Body).Decode(&sendTransaction)
+
+// 	if err != nil {
+// 		b := []byte(`{"Status" : "FAILURE", "message" : "failed to parse json"}`)
+// 		w.Write(b)
+// 	} else {
+
+// 		// first lets ensure that public key sent is a key thats valid for this security policy
+// 		var bValidKey bool = false
+
+// 		// the index for this public key
+// 		var keyIndex int = -1
+// 		var keyIndexCount int = 0
+// 		var totalKeys int = 0
+// 		sendTransaction.PublicKey = "6AF+XYK0eRXLdkKyRhx9suVhCxXPdOChK/IfBpNjyO8="
+// 		for _, key := range signatures {
+// 			totalKeys++
+// 			if key == false {
+// 				bValidKey = true
+// 				keyIndexCount++
+// 			}
+// 		}
+// 		keyIndex = totalKeys - keyIndexCount
+// 		if keyIndex < totalKeys {
+// 			// the key provided is not part of the signing policy
+// 			if !bValidKey {
+// 				b := []byte(`{"Status" : "FAILURE", "message" : "unauthorized public key"}`)
+// 				w.Write(b)
+// 				return
+// 			}
+
+// 			// if we are here its a valid security policy pubkey
+
+// 			// lets get the public key in binary
+// 			fmt.Println("input=%v", sendTransaction)
+// 			pkey, err := base64.StdEncoding.DecodeString(sendTransaction.PublicKey)
+// 			if err != nil {
+// 				b := []byte(`{"Status" : "FAILURE", "message" : "error retrieving public key"}`)
+// 				w.Write(b)
+// 			}
+
+// 			/**
+// 			verify the signature of the message
+// 			*/
+// 			// decode the message from base 64
+// 			sendTransaction.Message = "pTABh1NJZJYUVQXEb5zO3uTw+CI8nK/MyITA6LJ4a37f2O0mhB15y8vpcI65j5OVrU617ze5+FrGm8IkNlavAXsiYWN0aW9uIiA6ICJjcmVhdGVXYWxsZXQiLCAgInBhcmFtcyIgOiBbImRhY3MwMSJdfQ=="
+// 			encStr, err := base64.StdEncoding.DecodeString(sendTransaction.Message)
+// 			str, res := cryptosign.CryptoSignOpen(encStr, pkey)
+
+// 			debugLine := fmt.Sprintf("CryptoSignOpen res = %d, str = %s", res, str)
+// 			fmt.Println(debugLine)
+
+// 			if res != 0 {
+// 				/**
+// 				signature failure
+// 				*/
+// 				b := []byte(`{"Status" : "FAILURE", "message" : "signature failure"}`)
+// 				w.Write(b)
+
+// 				return
+
+// 			} else {
+
+// 				/**
+// 				signature matches
+// 				*/
+
+// 				debugLine = fmt.Sprintf("current transaction = %s", currentTransaction)
+// 				fmt.Println(debugLine)
+
+// 				message := fmt.Sprintf("%s", str)
+// 				// check for empty or new transacton
+// 				if currentTransaction == "" || strings.Compare(currentTransaction, message) != 0 {
+
+// 					debugLine = fmt.Sprintf("New Transaction, reseting flags")
+// 					fmt.Println(debugLine)
+
+// 					// clear the flags
+// 					for x, _ := range signatures {
+// 						signatures[x] = false
+
+// 					}
+
+// 					// reset the current transaction
+// 					currentTransaction = message
+// 					debugLine = fmt.Sprintf("New transaction set to: %s", message)
+// 					fmt.Println(debugLine)
+
+// 					// now set the flag for this key
+// 					signatures[keyIndex] = true
+// 					b := []byte(`{"Status" : "SUCCESS", "message" : "requires further approval"}`)
+// 					w.Write(b)
+
+// 					return
+
+// 				} else {
+// 					// existing transaction
+
+// 					// now set the flag for this key
+// 					signatures[keyIndex] = true
+// 					var signedCount int = 0
+// 					for _, signed := range signatures {
+// 						if signed {
+// 							signedCount++
+// 						}
+// 					}
+
+// 					// ship it
+// 					if signedCount >= 2 {
+
+// 						// pass this off to the wallet server
+
+// 						fmt.Printf("\r\nSending message = \r\n%s\r\nto the WalletServer\r\n", currentTransaction)
+
+// 						var walletTransaction StuctWalletTransaction
+// 						err := json.Unmarshal([]byte(currentTransaction), &walletTransaction)
+
+// 						if err != nil {
+// 							fmt.Println(err)
+// 							b := []byte(`{"Status" : "FAILURE", "message" : "message format wrong"}`)
+// 							w.Write(b)
+// 							return
+// 						}
+
+// 						if walletTransaction.Action == "createWallet" {
+
+// 							fmt.Println("this a a create wallet transction with id=", walletTransaction.Params[0])
+
+// 							jsonData := map[string]string{"orgid": walletTransaction.Params[0]}
+// 							jsonValue, _ := json.Marshal(jsonData)
+// 							response, err := http.Post(fmt.Sprintf("http://%s/createWallet", AppConfig.WalletServer), "application/json", bytes.NewBuffer([]byte(jsonValue)))
+// 							if err != nil {
+// 								fmt.Printf("The HTTP request failed with error %s\n", err)
+// 							} else {
+// 								data, _ := ioutil.ReadAll(response.Body)
+// 								fmt.Println(string(data))
+// 								w.Write(data)
+// 								return
+// 							}
+// 						} else if walletTransaction.Action == "getNewAddress" {
+// 							fmt.Println("this a a create wallet transction with id=", walletTransaction.Params[0])
+
+// 							jsonData := map[string]string{"orgid": walletTransaction.Params[0]}
+// 							jsonValue, _ := json.Marshal(jsonData)
+// 							response, err := http.Post(fmt.Sprintf("http://%s/getNewAddress", AppConfig.WalletServer), "application/json", bytes.NewBuffer([]byte(jsonValue)))
+// 							if err != nil {
+// 								fmt.Printf("The HTTP request failed with error %s\n", err)
+// 							} else {
+// 								data, _ := ioutil.ReadAll(response.Body)
+// 								fmt.Println(string(data))
+// 								w.Write(data)
+// 								return
+// 							}
+// 						}
+
+// 						b := []byte(`{"Status" : "SUCCESS", "message" : "transaction sent to Wallet Server"}`)
+// 						w.Write(b)
+// 						return
+
+// 					} else {
+// 						//waiting on signatures
+// 						b := []byte(`{"Status" : "SUCCESS", "message" : "requires further approval"}`)
+// 						w.Write(b)
+// 						return
+// 					}
+
+// 				}
+// 			}
+// 		} else {
+// 			//waiting on signatures
+// 			b := []byte(`{"Status" : "SUCCESS", "message" : "You already signed this transaction"}`)
+// 			w.Write(b)
+// 			return
+// 		}
+// 	}
+// }
+
+func sendTransactionTest1(w http.ResponseWriter, r *http.Request) {
 
 	defer func() {
 		if err := recover(); err != nil {
@@ -310,10 +500,8 @@ func sendTransactionTest(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}()
-	sendTransaction := StructSendTransaction{}
-
+	sendTransaction := StructSendTransactionTest{}
 	err := json.NewDecoder(r.Body).Decode(&sendTransaction)
-
 	if err != nil {
 		b := []byte(`{"Status" : "FAILURE", "message" : "failed to parse json"}`)
 		w.Write(b)
@@ -322,52 +510,94 @@ func sendTransactionTest(w http.ResponseWriter, r *http.Request) {
 		// first lets ensure that public key sent is a key thats valid for this security policy
 		var bValidKey bool = false
 
-		// the index for this public key
+		// // the index for this public key
 		var keyIndex int = -1
-		var keyIndexCount int = 0
-		var totalKeys int = 0
-		sendTransaction.PublicKey = "6AF+XYK0eRXLdkKyRhx9suVhCxXPdOChK/IfBpNjyO8="
-		for _, key := range signatures {
-			totalKeys++
-			if key == false {
+
+		for x, key := range signingKeys {
+			if key == sendTransaction.PublicKey {
 				bValidKey = true
-				keyIndexCount++
+				keyIndex = x
+				fmt.Println(key)
 			}
+
 		}
-		keyIndex = totalKeys - keyIndexCount
-		if keyIndex < totalKeys {
-			// the key provided is not part of the signing policy
-			if !bValidKey {
-				b := []byte(`{"Status" : "FAILURE", "message" : "unauthorized public key"}`)
-				w.Write(b)
-				return
+
+		// the key provided is not part of the signing policy
+		if !bValidKey {
+			b := []byte(`{"Status" : "FAILURE", "message" : "unauthorized public key"}`)
+			w.Write(b)
+			return
+		}
+
+		// if we are here its a valid security policy pubkey
+
+		// lets get the public key in binary
+		//fmt.Println("input=%v", sendTransaction)
+		// pkey, err := base64.StdEncoding.DecodeString(sendTransaction.PublicKey)
+		// if err != nil {
+		// 	b := []byte(`{"Status" : "FAILURE", "message" : "error retrieving public key"}`)
+		// 	w.Write(b)
+		// 	return
+		// }
+		// fmt.Println("public signing key=%v", pkey)
+		/**
+		  verify the signature of the message
+		*/
+		// decode the message from base 64
+
+		// encStr, err := base64.StdEncoding.DecodeString(sendTransaction.Message)
+		// str, res := cryptosign.CryptoSignOpen(encStr, pkey)
+
+		message := sendTransaction.Message
+		decodedMessage, _ := base64.StdEncoding.DecodeString(message)
+		nonce := sendTransaction.Nonce
+		senderPubkey := sendTransaction.PublicKey
+		encMsg := sodium.Bytes(decodedMessage)
+		skp := sodium.MakeBoxKP()
+		n := sodium.BoxNonce{}
+		sodium.Randomize(&n)
+
+		sPub, _ := base64.StdEncoding.DecodeString(senderPubkey)
+		sPriv, _ := base64.StdEncoding.DecodeString(sendTransaction.Sender)
+		var senderPubkeyByte []byte
+		var serverPrivkeyByte []byte
+		senderPubkeyByte = []byte(sPub)
+		serverPrivkeyByte = []byte(sPriv)
+
+		var sodPubObj sodium.BoxPublicKey
+		sodPubObj.Bytes = senderPubkeyByte
+		skp.PublicKey = sodPubObj
+
+		var sodPrivObj sodium.BoxSecretKey
+		sodPrivObj.Bytes = serverPrivkeyByte
+		skp.SecretKey = sodPrivObj
+
+		sDec, _ := base64.StdEncoding.DecodeString(nonce)
+		var nonceObj sodium.BoxNonce
+		nonceObj.Bytes = []byte(sDec)
+		n = nonceObj
+		plainText, errEnc := encMsg.BoxOpen(n, skp.PublicKey, skp.SecretKey)
+		if errEnc != nil {
+			b := []byte(`{"Status" : "FAILURE", "message" : "error decrepting message"}`)
+			w.Write(b)
+			return
+		} else {
+			type FilledIDModel struct {
+				Secret string
 			}
-
-			// if we are here its a valid security policy pubkey
-
-			// lets get the public key in binary
-			fmt.Println("input=%v", sendTransaction)
-			pkey, err := base64.StdEncoding.DecodeString(sendTransaction.PublicKey)
-			if err != nil {
-				b := []byte(`{"Status" : "FAILURE", "message" : "error retrieving public key"}`)
-				w.Write(b)
+			type RespModel struct {
+				FilledIDRequest FilledIDModel
 			}
+			var response RespModel
+			errUnmarshal := json.Unmarshal(plainText, &response)
+			debugLine := fmt.Sprintf("CryptoSignOpen res = %d", response.FilledIDRequest.Secret)
+			// fmt.Println(debugLine)
 
-			/**
-			verify the signature of the message
-			*/
-			// decode the message from base 64
-			sendTransaction.Message = "pTABh1NJZJYUVQXEb5zO3uTw+CI8nK/MyITA6LJ4a37f2O0mhB15y8vpcI65j5OVrU617ze5+FrGm8IkNlavAXsiYWN0aW9uIiA6ICJjcmVhdGVXYWxsZXQiLCAgInBhcmFtcyIgOiBbImRhY3MwMSJdfQ=="
-			encStr, err := base64.StdEncoding.DecodeString(sendTransaction.Message)
-			str, res := cryptosign.CryptoSignOpen(encStr, pkey)
-
-			debugLine := fmt.Sprintf("CryptoSignOpen res = %d, str = %s", res, str)
-			fmt.Println(debugLine)
-
-			if res != 0 {
+			if errUnmarshal != nil {
 				/**
 				signature failure
 				*/
+				fmt.Println(errUnmarshal)
 				b := []byte(`{"Status" : "FAILURE", "message" : "signature failure"}`)
 				w.Write(b)
 
@@ -382,7 +612,7 @@ func sendTransactionTest(w http.ResponseWriter, r *http.Request) {
 				debugLine = fmt.Sprintf("current transaction = %s", currentTransaction)
 				fmt.Println(debugLine)
 
-				message := fmt.Sprintf("%s", str)
+				message := fmt.Sprintf("%s", response.FilledIDRequest.Secret)
 				// check for empty or new transacton
 				if currentTransaction == "" || strings.Compare(currentTransaction, message) != 0 {
 
@@ -480,11 +710,6 @@ func sendTransactionTest(w http.ResponseWriter, r *http.Request) {
 
 				}
 			}
-		} else {
-			//waiting on signatures
-			b := []byte(`{"Status" : "SUCCESS", "message" : "You already signed this transaction"}`)
-			w.Write(b)
-			return
 		}
 	}
 }
@@ -524,12 +749,12 @@ func main() {
 	json.Unmarshal(raw, &AppConfig)
 
 	fmt.Printf("Running with configuration = \r\n%+v\n", AppConfig)
-
 	// set up our apis
 	router := mux.NewRouter()
 	router.HandleFunc("/", getReq).Methods("GET")
 	router.HandleFunc("/sendTransaction", sendTransaction).Methods("POST")
-	router.HandleFunc("/sendTransactionTest", sendTransactionTest).Methods("POST")
+	//router.HandleFunc("/sendTransactionTest", sendTransactionTest).Methods("POST")
+	router.HandleFunc("/sendTransactionTest1", sendTransactionTest1).Methods("POST")
 
 	//test
 	//setDumyKeys()
