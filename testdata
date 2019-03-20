@@ -33,3 +33,18 @@ signed message = pTABh1NJZJYUVQXEb5zO3uTw+CI8nK/MyITA6LJ4a37f2O0mhB15y8vpcI65j5O
 
 new wallet
 SkwV4uk6GwYYTv+OzxDusFC1H+TNY2ctkAnC1PvLPveiZUaa+ZERx2H7YAoLG28uji6RNygjU22u5Udwb3PcBHsiYWN0aW9uIiA6ICJnZXROZXdBZGRyZXNzIiwgICJwYXJhbXMiIDogWyJkYWNzMDEiXX0=
+
+getWalletBalance
+3B3xhkkipan+0soYASrk+TnTMi2iVJ9ZBbxfl9gEezx8DhLdeDgPpEax/J0n4n64CDUy+dCJGohPZgqdJh1ODXsiYWN0aW9uIiA6ICJnZXRXYWxsZXRCYWxhbmNlIn0=
+
+sendTo
+
+
+
+{"action" : "getWalletBalance"}
+eyJhY3Rpb24iIDogImdldFdhbGxldEJhbGFuY2UifQ==
+
+
+{"action" : "sendTo", "params" : ["dacs01", "2N654wJaDpy9TeRTxmrEckKB3WcLSjeEaik", "0.0001"]}
+eyJhY3Rpb24iIDogInNlbmRUbyIsICJwYXJhbXMiIDogWyJkYWNzMDEiLCAiMk42NTR3SmFEcHk5VGVSVHhtckVja0tCM1djTFNqZUVhaWsiLCAiMC4wMDAxIl19
+IEinu9JtXpWLv2GzTNxBV5tAGqZIvXv6HU3iskz+UrIsTAuk5eWtTnW8/ALu5Zzm22j3KiJVz+qGxxSOM9R8A3siYWN0aW9uIiA6ICJzZW5kVG8iLCAicGFyYW1zIiA6IFsiZGFjczAxIiwgIjJONjU0d0phRHB5OVRlUlR4bXJFY2tLQjNXY0xTamVFYWlrIiwgIjAuMDAwMSJdfQ==

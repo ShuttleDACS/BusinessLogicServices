@@ -13,6 +13,7 @@ import (
 	"github.com/GoKillers/libsodium-go/cryptosign"
 	"github.com/gorilla/mux"
 	"github.com/jamesruan/sodium"
+
 )
 
 // Globals
@@ -75,6 +76,103 @@ func getReq(w http.ResponseWriter, r *http.Request) {
 	*/
 }
 
+func whitelist(sendTransaction StructSendTransaction) string{
+
+	// lets get the public key in binary
+	fmt.Println("input=%v", sendTransaction)
+	pkey, err := base64.StdEncoding.DecodeString(sendTransaction.PublicKey)
+	if err != nil {
+		return "error with json formating"
+	}
+
+	/**
+	  verify the signature of the message
+	*/
+	// decode the message from base 64
+	encStr, err := base64.StdEncoding.DecodeString(sendTransaction.Message)
+	str, res := cryptosign.CryptoSignOpen(encStr, pkey)
+
+	debugLine := fmt.Sprintf("CryptoSignOpen res = %d, str = %s", res, str)
+	fmt.Println(debugLine)
+
+
+	transaction := StuctWalletTransaction{}
+
+	json.Unmarshal([]byte(str), &transaction)
+
+	fmt.Println("%v", transaction)
+
+
+	if(transaction.Action == "getNewAddress" || transaction.Action == "createWallet" || transaction.Action == "sendTo" || transaction.Action == "getWalletBalance"){
+		fmt.Printf("This is a white list transaction ==> %s\r\n", transaction.Action)
+
+
+		if transaction.Action == "createWallet" {
+
+			fmt.Println("this a a create wallet transction with id=", transaction.Params[0])
+			jsonData := map[string]string{"orgid": transaction.Params[0]}
+			jsonValue, _ := json.Marshal(jsonData)
+			response, err := http.Post(fmt.Sprintf("http://%s/createWallet", AppConfig.WalletServer), "application/json", bytes.NewBuffer([]byte(jsonValue)))
+			if err != nil {
+				fmt.Printf("The HTTP request failed with error %s\n", err)
+			} else {
+				data, _ := ioutil.ReadAll(response.Body)
+				fmt.Println(string(data))
+
+				return string(data)
+			}
+		} else if transaction.Action == "getNewAddress" {
+			fmt.Println("this a a create wallet transction with id=", transaction.Params[0])
+
+			jsonData := map[string]string{"orgid": transaction.Params[0]}
+			jsonValue, _ := json.Marshal(jsonData)
+			response, err := http.Post(fmt.Sprintf("http://%s/getNewAddress", AppConfig.WalletServer), "application/json", bytes.NewBuffer([]byte(jsonValue)))
+			if err != nil {
+				fmt.Printf("The HTTP request failed with error %s\n", err)
+			} else {
+				data, _ := ioutil.ReadAll(response.Body)
+				fmt.Println(string(data))
+				return string(data)
+
+			}
+		} else if transaction.Action == "getWalletBalance"{
+			fmt.Println("this a a get wallet balance")
+
+			//jsonData := map[string]string{"orgid": transaction.Params[0]}
+			//jsonValue, _ := json.Marshal(jsonData)
+			response, err := http.Post(fmt.Sprintf("http://%s/getWalletBalance", AppConfig.WalletConnected), "application/json", bytes.NewBuffer([]byte("")))
+			if err != nil {
+				fmt.Printf("The HTTP request failed with error %s\n", err)
+			} else {
+				data, _ := ioutil.ReadAll(response.Body)
+				fmt.Println(string(data))
+				return string(data)
+
+			}
+		}else if transaction.Action == "sendTo" {
+			fmt.Printf("this a a send transction with orgid=%s, destination=%s, amount=%s", transaction.Params[0], transaction.Params[1], transaction.Params[2])
+
+			jsonData := map[string]string{"orgid": transaction.Params[0], "destination":transaction.Params[1], "amount":transaction.Params[2]}
+			jsonValue, _ := json.Marshal(jsonData)
+			response, err := http.Post(fmt.Sprintf("http://%s/sendTo", AppConfig.WalletServer), "application/json", bytes.NewBuffer([]byte(jsonValue)))
+			if err != nil {
+				fmt.Printf("The HTTP request failed with error %s\n", err)
+			} else {
+				data, _ := ioutil.ReadAll(response.Body)
+				fmt.Println(string(data))
+				return string(data)
+
+			}
+		}
+
+
+		return ""
+
+	}
+
+
+	return ""
+}
 /*
 func generateSigningKeys(w http.ResponseWriter, r *http.Request) {
 
@@ -140,162 +238,173 @@ func sendTransaction(w http.ResponseWriter, r *http.Request) {
 		w.Write(b)
 	} else {
 
-		// first lets ensure that public key sent is a key thats valid for this security policy
-		var bValidKey bool = false
+		retval := whitelist(sendTransaction)
+		fmt.Printf("whitelist check returned: %s", retval)
+		if (retval != "") {
 
-		// the index for this public key
-		var keyIndex int = -1
 
-		for x, key := range signingKeys {
-			if key == sendTransaction.PublicKey {
-				bValidKey = true
-				keyIndex = x
-				fmt.Println(key)
-			}
-
-		}
-
-		// the key provided is not part of the signing policy
-		if !bValidKey {
-			b := []byte(`{"Status" : "FAILURE", "message" : "unauthorized public key"}`)
+			fmt.Printf("White listed tx returning\r\n%s\r\n", retval)
+			b := []byte(retval)
 			w.Write(b)
-			return
-		}
-
-		// if we are here its a valid security policy pubkey
-
-		// lets get the public key in binary
-		fmt.Println("input=%v", sendTransaction)
-		pkey, err := base64.StdEncoding.DecodeString(sendTransaction.PublicKey)
-		if err != nil {
-			b := []byte(`{"Status" : "FAILURE", "message" : "error retrieving public key"}`)
-			w.Write(b)
-		}
-
-		/**
-		  verify the signature of the message
-		*/
-		// decode the message from base 64
-		encStr, err := base64.StdEncoding.DecodeString(sendTransaction.Message)
-		str, res := cryptosign.CryptoSignOpen(encStr, pkey)
-
-		debugLine := fmt.Sprintf("CryptoSignOpen res = %d, str = %s", res, str)
-		fmt.Println(debugLine)
-
-		if res != 0 {
-			/**
-			signature failure
-			*/
-			b := []byte(`{"Status" : "FAILURE", "message" : "signature failure"}`)
-			w.Write(b)
-
 			return
 
 		} else {
 
-			/**
-			signature matches
-			*/
+			// check for whitelist here
+			// first lets ensure that public key sent is a key thats valid for this security policy
+			var bValidKey bool = false
 
-			debugLine = fmt.Sprintf("current transaction = %s", currentTransaction)
-			fmt.Println(debugLine)
+			// the index for this public key
+			var keyIndex int = -1
 
-			message := fmt.Sprintf("%s", str)
-			// check for empty or new transacton
-			if currentTransaction == "" || strings.Compare(currentTransaction, message) != 0 {
-
-				debugLine = fmt.Sprintf("New Transaction, reseting flags")
-				fmt.Println(debugLine)
-
-				// clear the flags
-				for x, _ := range signatures {
-					signatures[x] = false
-
+			for x, key := range signingKeys {
+				if key == sendTransaction.PublicKey {
+					bValidKey = true
+					keyIndex = x
+					fmt.Println(key)
 				}
 
-				// reset the current transaction
-				currentTransaction = message
-				debugLine = fmt.Sprintf("New transaction set to: %s", message)
-				fmt.Println(debugLine)
+			}
 
-				// now set the flag for this key
-				signatures[keyIndex] = true
-				b := []byte(`{"Status" : "SUCCESS", "message" : "requires further approval"}`)
+			// the key provided is not part of the signing policy
+			if !bValidKey {
+				b := []byte(`{"Status" : "FAILURE", "message" : "unauthorized public key"}`)
+				w.Write(b)
+				return
+			}
+
+			// if we are here its a valid security policy pubkey
+
+			// lets get the public key in binary
+			fmt.Println("input=%v", sendTransaction)
+			pkey, err := base64.StdEncoding.DecodeString(sendTransaction.PublicKey)
+			if err != nil {
+				b := []byte(`{"Status" : "FAILURE", "message" : "error retrieving public key"}`)
+				w.Write(b)
+			}
+
+			/**
+		  	verify the signature of the message
+			*/
+			// decode the message from base 64
+			encStr, err := base64.StdEncoding.DecodeString(sendTransaction.Message)
+			str, res := cryptosign.CryptoSignOpen(encStr, pkey)
+
+			debugLine := fmt.Sprintf("CryptoSignOpen res = %d, str = %s", res, str)
+			fmt.Println(debugLine)
+
+			if res != 0 {
+				/**
+				signature failure
+				*/
+				b := []byte(`{"Status" : "FAILURE", "message" : "signature failure"}`)
 				w.Write(b)
 
 				return
 
 			} else {
-				// existing transaction
 
-				// now set the flag for this key
-				signatures[keyIndex] = true
-				var signedCount int = 0
-				for _, signed := range signatures {
-					if signed {
-						signedCount++
-					}
-				}
+				/**
+				signature matches
+				*/
 
-				// ship it
-				if signedCount >= 2 {
+				debugLine = fmt.Sprintf("current transaction = %s", currentTransaction)
+				fmt.Println(debugLine)
 
-					// pass this off to the wallet server
+				message := fmt.Sprintf("%s", str)
+				// check for empty or new transacton
+				if currentTransaction == "" || strings.Compare(currentTransaction, message) != 0 {
 
-					fmt.Printf("\r\nSending message = \r\n%s\r\nto the WalletServer\r\n", currentTransaction)
+					debugLine = fmt.Sprintf("New Transaction, reseting flags")
+					fmt.Println(debugLine)
 
-					var walletTransaction StuctWalletTransaction
-					err := json.Unmarshal([]byte(currentTransaction), &walletTransaction)
+					// clear the flags
+					for x, _ := range signatures {
+						signatures[x] = false
 
-					if err != nil {
-						fmt.Println(err)
-						b := []byte(`{"Status" : "FAILURE", "message" : "message format wrong"}`)
-						w.Write(b)
-						return
 					}
 
-					if walletTransaction.Action == "createWallet" {
+					// reset the current transaction
+					currentTransaction = message
+					debugLine = fmt.Sprintf("New transaction set to: %s", message)
+					fmt.Println(debugLine)
 
-						fmt.Println("this a a create wallet transction with id=", walletTransaction.Params[0])
-
-						jsonData := map[string]string{"orgid": walletTransaction.Params[0]}
-						jsonValue, _ := json.Marshal(jsonData)
-						response, err := http.Post(fmt.Sprintf("http://%s/createWallet", AppConfig.WalletServer), "application/json", bytes.NewBuffer([]byte(jsonValue)))
-						if err != nil {
-							fmt.Printf("The HTTP request failed with error %s\n", err)
-						} else {
-							data, _ := ioutil.ReadAll(response.Body)
-							fmt.Println(string(data))
-							w.Write(data)
-							return
-						}
-					} else if walletTransaction.Action == "getNewAddress" {
-						fmt.Println("this a a create wallet transction with id=", walletTransaction.Params[0])
-
-						jsonData := map[string]string{"orgid": walletTransaction.Params[0]}
-						jsonValue, _ := json.Marshal(jsonData)
-						response, err := http.Post(fmt.Sprintf("http://%s/getNewAddress", AppConfig.WalletServer), "application/json", bytes.NewBuffer([]byte(jsonValue)))
-						if err != nil {
-							fmt.Printf("The HTTP request failed with error %s\n", err)
-						} else {
-							data, _ := ioutil.ReadAll(response.Body)
-							fmt.Println(string(data))
-							w.Write(data)
-							return
-						}
-					}
-
-					b := []byte(`{"Status" : "SUCCESS", "message" : "transaction sent to Wallet Server"}`)
+					// now set the flag for this key
+					signatures[keyIndex] = true
+					b := []byte(`{"Status" : "SUCCESS", "message" : "requires further approval"}`)
 					w.Write(b)
+
 					return
 
 				} else {
-					//waiting on signatures
-					b := []byte(`{"Status" : "SUCCESS", "message" : "requires further approval"}`)
-					w.Write(b)
-					return
-				}
+					// existing transaction
 
+					// now set the flag for this key
+					signatures[keyIndex] = true
+					var signedCount int = 0
+					for _, signed := range signatures {
+						if signed {
+							signedCount++
+						}
+					}
+
+					// ship it
+					if signedCount >= 2 {
+
+						// pass this off to the wallet server
+						fmt.Printf("\r\nSending message = \r\n%s\r\nto the WalletServer\r\n", currentTransaction)
+
+						var walletTransaction StuctWalletTransaction
+						err := json.Unmarshal([]byte(currentTransaction), &walletTransaction)
+
+						if err != nil {
+							fmt.Println(err)
+							b := []byte(`{"Status" : "FAILURE", "message" : "message format wrong"}`)
+							w.Write(b)
+							return
+						}
+
+						if walletTransaction.Action == "createWallet" {
+
+							fmt.Println("this a a create wallet transction with id=", walletTransaction.Params[0])
+							jsonData := map[string]string{"orgid": walletTransaction.Params[0]}
+							jsonValue, _ := json.Marshal(jsonData)
+							response, err := http.Post(fmt.Sprintf("http://%s/createWallet", AppConfig.WalletServer), "application/json", bytes.NewBuffer([]byte(jsonValue)))
+							if err != nil {
+								fmt.Printf("The HTTP request failed with error %s\n", err)
+							} else {
+								data, _ := ioutil.ReadAll(response.Body)
+								fmt.Println(string(data))
+								w.Write(data)
+								return
+							}
+						} else if walletTransaction.Action == "getNewAddress" {
+							fmt.Println("this a a create wallet transction with id=", walletTransaction.Params[0])
+
+							jsonData := map[string]string{"orgid": walletTransaction.Params[0]}
+							jsonValue, _ := json.Marshal(jsonData)
+							response, err := http.Post(fmt.Sprintf("http://%s/getNewAddress", AppConfig.WalletServer), "application/json", bytes.NewBuffer([]byte(jsonValue)))
+							if err != nil {
+								fmt.Printf("The HTTP request failed with error %s\n", err)
+							} else {
+								data, _ := ioutil.ReadAll(response.Body)
+								fmt.Println(string(data))
+								w.Write(data)
+								return
+							}
+						}
+
+						b := []byte(`{"Status" : "SUCCESS", "message" : "transaction sent to Wallet Server"}`)
+						w.Write(b)
+						return
+
+					} else {
+						//waiting on signatures
+						b := []byte(`{"Status" : "SUCCESS", "message" : "requires further approval"}`)
+						w.Write(b)
+						return
+					}
+				}
 			}
 		}
 	}

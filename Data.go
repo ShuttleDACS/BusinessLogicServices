@@ -2,9 +2,10 @@ package main
 
 // the configuration object
 type Configuration struct {
-	PortNumber   string
-	WebServer    string
-	WalletServer string
+	PortNumber   	string
+	WebServer    	string
+	WalletServer 	string
+	WalletConnected string
 }
 
 type StructKeys struct {
