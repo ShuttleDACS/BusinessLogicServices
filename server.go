@@ -194,10 +194,12 @@ func whitelist(sendTransaction StructSendTransactionTest) string {
 
 						}
 					} else if transaction.Action == "sendBitcoin" {
-						fmt.Printf("this a a send transction with orgid=%s, destination=%s, amount=%s", transaction.Params[0], transaction.Params[1], transaction.Params[2])
+						fmt.Printf("this a send transction with orgid=%s, destination=%s, amount=%s", transaction.Params[0], transaction.Params[2], transaction.Params[1])
 
 						jsonData := map[string]string{"orgid": transaction.Params[0], "destination": transaction.Params[2], "amount": transaction.Params[1]}
 						jsonValue, _ := json.Marshal(jsonData)
+						fmt.Println(jsonData)
+						fmt.Println(jsonValue)
 						response, err := http.Post(fmt.Sprintf("http://%s/sendTo", AppConfig.WalletServer), "application/json", bytes.NewBuffer([]byte(jsonValue)))
 						if err != nil {
 							fmt.Printf("The HTTP request failed with error %s\n", err)
@@ -871,6 +873,20 @@ func sendTransactionTest1(w http.ResponseWriter, r *http.Request) {
 								jsonData := map[string]string{"orgid": walletTransaction.Params[0]}
 								jsonValue, _ := json.Marshal(jsonData)
 								response, err := http.Post(fmt.Sprintf("http://%s/getNewAddress", AppConfig.WalletServer), "application/json", bytes.NewBuffer([]byte(jsonValue)))
+								if err != nil {
+									fmt.Printf("The HTTP request failed with error %s\n", err)
+								} else {
+									data, _ := ioutil.ReadAll(response.Body)
+									fmt.Println(string(data))
+									w.Write(data)
+									return
+								}
+							} else if walletTransaction.Action == "sendBitcoin" {
+								fmt.Printf("this a a send transction with orgid=%s, destination=%s, amount=%s", walletTransaction.Params[0], walletTransaction.Params[1], walletTransaction.Params[2])
+		
+								jsonData := map[string]string{"orgid": walletTransaction.Params[0], "destination": walletTransaction.Params[2], "amount": walletTransaction.Params[1]}
+								jsonValue, _ := json.Marshal(jsonData)
+								response, err := http.Post(fmt.Sprintf("http://%s/sendTo", AppConfig.WalletServer), "application/json", bytes.NewBuffer([]byte(jsonValue)))
 								if err != nil {
 									fmt.Printf("The HTTP request failed with error %s\n", err)
 								} else {
