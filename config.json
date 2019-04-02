@@ -1,6 +1,6 @@
 {
   "portNumber" : ":3000",
-  "walletServer" : "192.168.10.18:4000",
-  "walletConnected" : "192.168.10.18:4100",
-  "webserver" : "192.168.10.18:2000"
+  "walletServer" : "192.168.10.19:4000",
+  "walletConnected" : "192.168.10.19:4100",
+  "webserver" : "192.168.10.19:2000"
 }
