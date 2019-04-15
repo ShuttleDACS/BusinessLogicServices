@@ -27,7 +27,7 @@ var signatures = []bool{}
 These are the keys that are required for signing a transaction
 this data is hard coded intentionally and to be replaced for a new security policy
 */
-var signingKeys = []string{"JZC1155TEzykAcMeikovhp1gf09CKorKK+gcqmiZHBw=", "6AF+XYK0eRXLdkKyRhx9suVhCxXPdOChK/IfBpNjyO8="}
+var signingKeys = []string{"FU1IYL0PimtBep7BmjmBmDsihuflwIfBFcfaHOw7Oww=", "qJlfwrJVjCcMiQNfZ1Ip5oeBTORBUh0LoXtFBwREvWA=", "S20ZKpOHExlqXbxIrupwb822Z3ZAzTXmpyMJpDZU4mU=", "KgC3iCVwfp/qF0FvffEBFdOqzLAxJaxoB8wgKAB5938=", "ASqPLVPE9x1Ia/Z7vtye6PELZ2ncFCkJoaDbBSEcK1s="}
 
 /**
 the current transaction, there can be only one
