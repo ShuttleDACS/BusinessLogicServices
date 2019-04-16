@@ -149,7 +149,8 @@ func whitelist(sendTransaction StructSendTransactionTest) string {
 				b := []byte(`{"Status" : "FAILURE", "message" : "message format wrong"}`)
 				return string(b)
 			} else {
-				if transaction.Action == "getNewAddress" || transaction.Action == "createWallet" || transaction.Action == "sendBitcoin" || transaction.Action == "getWalletBalance" {
+				//if transaction.Action == "getNewAddress" || transaction.Action == "createWallet" || transaction.Action == "sendBitcoin" || transaction.Action == "getWalletBalance" {
+				if transaction.Action == "getWalletBalance" {
 					fmt.Printf("This is a white list transaction ==> %s\r\n", transaction.Action)
 
 					if transaction.Action == "createWallet" {
@@ -957,7 +958,7 @@ func main() {
 	router.HandleFunc("/sendTransaction", sendTransaction).Methods("POST")
 	//router.HandleFunc("/sendTransactionTest", sendTransactionTest).Methods("POST")
 	//router.HandleFunc("/sendTransactionTest1", sendTransactionTest1).Methods("POST")
-	router.HandleFunc("/sendTransactionTest1", sendTransaction).Methods("POST")
+	router.HandleFunc("/sendTransactionTest1", sendTransactionTest1).Methods("POST")
 
 	//test
 	//setDumyKeys()
