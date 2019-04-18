@@ -28,7 +28,7 @@ These are the keys that are required for signing a transaction
 this data is hard coded intentionally and to be replaced for a new security policy
 */
 // these for demo_01 database for brad
-var signingKeys = []string{"aYtjWXbVYGYkEv3CBqiAFeIcS67+RIcIUq2mttCPAns=", "MEyl0w78hNKecDjrF/sijnvT7EZXyIIp0J1+K4SzwR0=", "rlaDu178/nUVb5Qin2ZNxQ/Qm/s82QSva2trKb2t9jc=", "D2+Pyw4vVKRHhfP8M3Xy3VFaosYOzCOUq+BrprDAPmU=", "/Ln420eHPLAdxUdK2dmObhrLKu/GW8a11M+cWW96Nik=",  "4RZ48+kJyRwV9R/VWPtZLRp2oBZwFw8cSUTpGQWw+lc="}
+var signingKeys = []string{"aYtjWXbVYGYkEv3CBqiAFeIcS67+RIcIUq2mttCPAns=", "MEyl0w78hNKecDjrF/sijnvT7EZXyIIp0J1+K4SzwR0=", "rlaDu178/nUVb5Qin2ZNxQ/Qm/s82QSva2trKb2t9jc=", "D2+Pyw4vVKRHhfP8M3Xy3VFaosYOzCOUq+BrprDAPmU=", "/Ln420eHPLAdxUdK2dmObhrLKu/GW8a11M+cWW96Nik=", "4RZ48+kJyRwV9R/VWPtZLRp2oBZwFw8cSUTpGQWw+lc="}
 
 /**
 the current transaction, there can be only one
@@ -149,8 +149,8 @@ func whitelist(sendTransaction StructSendTransactionTest) string {
 				b := []byte(`{"Status" : "FAILURE", "message" : "message format wrong"}`)
 				return string(b)
 			} else {
-				//if transaction.Action == "getNewAddress" || transaction.Action == "createWallet" || transaction.Action == "sendBitcoin" || transaction.Action == "getWalletBalance" {
-				if transaction.Action == "getWalletBalance" {
+				if transaction.Action == "getNewAddress" || transaction.Action == "createWallet" || transaction.Action == "sendBitcoin" || transaction.Action == "getWalletBalance" {
+					//if transaction.Action == "getWalletBalance" {
 					fmt.Printf("This is a white list transaction ==> %s\r\n", transaction.Action)
 
 					if transaction.Action == "createWallet" {
@@ -205,6 +205,8 @@ func whitelist(sendTransaction StructSendTransactionTest) string {
 						response, err := http.Post(fmt.Sprintf("http://%s/sendTo", AppConfig.WalletServer), "application/json", bytes.NewBuffer([]byte(jsonValue)))
 						if err != nil {
 							fmt.Printf("The HTTP request failed with error %s\n", err)
+							b := []byte(`{"Status" : "FAILURE", "message" : "sendTo Failure"}`)
+							return string(b)
 						} else {
 							data, _ := ioutil.ReadAll(response.Body)
 							fmt.Println(string(data))
@@ -885,7 +887,7 @@ func sendTransactionTest1(w http.ResponseWriter, r *http.Request) {
 								}
 							} else if walletTransaction.Action == "sendBitcoin" {
 								fmt.Printf("this a a send transction with orgid=%s, destination=%s, amount=%s", walletTransaction.Params[0], walletTransaction.Params[1], walletTransaction.Params[2])
-		
+
 								jsonData := map[string]string{"orgid": walletTransaction.Params[0], "destination": walletTransaction.Params[2], "amount": walletTransaction.Params[1]}
 								jsonValue, _ := json.Marshal(jsonData)
 								response, err := http.Post(fmt.Sprintf("http://%s/sendTo", AppConfig.WalletServer), "application/json", bytes.NewBuffer([]byte(jsonValue)))
