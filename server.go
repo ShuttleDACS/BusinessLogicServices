@@ -118,7 +118,7 @@ func whitelist(sendTransaction StructSendTransactionTest) string {
 		}
 		var response RespModel
 		errUnmarshal := json.Unmarshal(plainText, &response)
-		debugLine := fmt.Sprintf("Encoded Message is = %d", response.FilledIDRequest.Secret)
+		debugLine := fmt.Sprintf("Encoded Message is = %s", response.FilledIDRequest.Secret)
 		fmt.Println(debugLine)
 		if errUnmarshal != nil {
 			/**
@@ -345,7 +345,7 @@ func sendTransaction(w http.ResponseWriter, r *http.Request) {
 			// if we are here its a valid security policy pubkey
 
 			// lets get the public key in binary
-			fmt.Println("input=%v", sendTransaction)
+			fmt.Printf("input=%v", sendTransaction)
 			pkey, err := base64.StdEncoding.DecodeString(sendTransaction.PublicKey)
 			if err != nil {
 				b := []byte(`{"Status" : "FAILURE", "message" : "error retrieving public key"}`)
@@ -780,7 +780,7 @@ func sendTransactionTest1(w http.ResponseWriter, r *http.Request) {
 				}
 				var response RespModel
 				errUnmarshal := json.Unmarshal(plainText, &response)
-				debugLine := fmt.Sprintf("CryptoSignOpen res = %d", response.FilledIDRequest.Secret)
+				debugLine := fmt.Sprintf("CryptoSignOpen res = %s", response.FilledIDRequest.Secret)
 				// fmt.Println(debugLine)
 
 				if errUnmarshal != nil {
@@ -970,7 +970,7 @@ func main() {
 	router.HandleFunc("/setValues", setValues).Methods("POST")
 	http.Handle("/", &MyServer{router})
 	// start the server listening
-	fmt.Println("Server starting to listen on port = %s", AppConfig.PortNumber)
+	fmt.Printf("Server starting to listen on port = %s", AppConfig.PortNumber)
 	if err := http.ListenAndServe(AppConfig.PortNumber, nil); err != nil {
 		panic(err)
 	}
