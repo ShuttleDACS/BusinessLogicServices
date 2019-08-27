@@ -28,7 +28,7 @@ These are the keys that are required for signing a transaction
 this data is hard coded intentionally and to be replaced for a new security policy
 */
 // these for demo_01 database for brad
-var signingKeys = []string{"aYtjWXbVYGYkEv3CBqiAFeIcS67+RIcIUq2mttCPAns=", "MEyl0w78hNKecDjrF/sijnvT7EZXyIIp0J1+K4SzwR0=", "rlaDu178/nUVb5Qin2ZNxQ/Qm/s82QSva2trKb2t9jc=", "D2+Pyw4vVKRHhfP8M3Xy3VFaosYOzCOUq+BrprDAPmU=", "/Ln420eHPLAdxUdK2dmObhrLKu/GW8a11M+cWW96Nik=", "4RZ48+kJyRwV9R/VWPtZLRp2oBZwFw8cSUTpGQWw+lc="}
+var signingKeys = []string{"ErmLBA0X20wi9GDFxPOvlMcQ/76sJETxx9HKrjTNvHE=", "MEyl0w78hNKecDjrF/sijnvT7EZXyIIp0J1+K4SzwR0=", "rlaDu178/nUVb5Qin2ZNxQ/Qm/s82QSva2trKb2t9jc=", "D2+Pyw4vVKRHhfP8M3Xy3VFaosYOzCOUq+BrprDAPmU=", "/Ln420eHPLAdxUdK2dmObhrLKu/GW8a11M+cWW96Nik=", "4RZ48+kJyRwV9R/VWPtZLRp2oBZwFw8cSUTpGQWw+lc="}
 
 /**
 the current transaction, there can be only one
